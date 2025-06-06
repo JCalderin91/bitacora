@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { supabase } from '../supabase'
 import ConfirmModal from './ConfirmModal.vue'
+import ReportModal from './ReportModal.vue'
 
 const events = ref([])
 const newEvent = ref('')
@@ -16,6 +17,9 @@ const customTime = ref('')
 const showDeleteModal = ref(false)
 const eventToDelete = ref(null)
 
+// Estado para el modal de reporte
+const showReportModal = ref(false)
+
 const formatDate = (dateString) => {
   const date = new Date(dateString)
   return new Intl.DateTimeFormat('es-ES', {
@@ -25,6 +29,24 @@ const formatDate = (dateString) => {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true
+  }).format(date)
+}
+
+const formatTimeOnly = (dateString) => {
+  const date = new Date(dateString)
+  return new Intl.DateTimeFormat('es-ES', {
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  }).format(date)
+}
+
+const formatDateOnly = (dateString) => {
+  const date = new Date(dateString)
+  return new Intl.DateTimeFormat('es-ES', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
   }).format(date)
 }
 
@@ -164,6 +186,18 @@ const cancelDelete = () => {
   eventToDelete.value = null
 }
 
+const generateReport = () => {
+  const { start } = getDateRange(selectedFilter.value)
+  const reportDate = formatDateOnly(start)
+
+  const events = filteredEvents.value
+    .map(event => `• ${event.content}\n  ${formatTimeOnly(event.created_at)}`)
+    .join('\n\n')
+
+  const reportContent = `📝 Bitácora de eventos - ${reportDate}\n\n${events}`
+  return reportContent
+}
+
 onMounted(() => {
   fetchEvents()
 })
@@ -238,7 +272,20 @@ onMounted(() => {
 
     <div>
       <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Eventos registrados</h2>
+        <div class="flex items-center gap-4">
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Eventos registrados</h2>
+          <button
+            v-if="filteredEvents.length > 0"
+            @click="showReportModal = true"
+            class="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 dark:hover:text-indigo-300"
+            title="Generar reporte de eventos"
+          >
+            <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M4.5 2A1.5 1.5 0 003 3.5v13A1.5 1.5 0 004.5 18h11a1.5 1.5 0 001.5-1.5V7.621a1.5 1.5 0 00-.44-1.06l-4.12-4.122A1.5 1.5 0 0011.378 2H4.5zm2.25 8.5a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5zm0 3a.75.75 0 000 1.5h6.5a.75.75 0 000-1.5h-6.5z" clip-rule="evenodd" />
+            </svg>
+            Generar reporte
+          </button>
+        </div>
         <div class="inline-flex rounded-lg shadow-sm">
           <button
             @click="selectedFilter = 'today'"
@@ -304,6 +351,12 @@ onMounted(() => {
       message="¿Estás seguro de que quieres eliminar este evento? Esta acción no se puede deshacer."
       @confirm="deleteEvent"
       @cancel="cancelDelete"
+    />
+
+    <ReportModal
+      :is-open="showReportModal"
+      :content="generateReport()"
+      @close="showReportModal = false"
     />
   </div>
 </template>

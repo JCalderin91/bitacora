@@ -8,10 +8,31 @@ const error = ref(null)
 const handleLogout = async () => {
   try {
     loading.value = true
+
+    // Obtener la sesión actual
+    const { data: { session } } = await supabase.auth.getSession()
+
+    // Si hay una sesión y es de Google, revocar el acceso
+    if (session?.provider_token) {
+      try {
+        await fetch(`https://accounts.google.com/o/oauth2/revoke?token=${session.provider_token}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+          }
+        })
+      } catch (revokeError) {
+        console.error('Error al revocar el token de Google:', revokeError)
+      }
+    }
+
+    // Cerrar sesión en Supabase
     const { error: logoutError } = await supabase.auth.signOut()
     if (logoutError) throw logoutError
+
   } catch (e) {
     error.value = e.message
+    console.error('Error al cerrar sesión:', e)
   } finally {
     loading.value = false
   }
