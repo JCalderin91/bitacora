@@ -205,21 +205,21 @@ onMounted(() => {
 
 <template>
   <div class="max-w-4xl mx-auto p-4">
-    <div class="mb-8">
-      <h2 class="text-2xl font-bold mb-4 text-gray-900 dark:text-white">Añadir nuevo evento</h2>
+    <div class="mb-6 sm:mb-8">
+      <h2 class="text-xl sm:text-2xl font-bold mb-4 text-gray-900 dark:text-white">Añadir nuevo evento</h2>
       <div class="space-y-4">
-        <div class="flex gap-4">
+        <div class="flex flex-col sm:flex-row gap-3 sm:gap-4">
           <input
             v-model="newEvent"
             type="text"
             placeholder="¿Qué sucedió?"
-            class="flex-1 rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:focus:ring-indigo-400 dark:placeholder-gray-400"
+            class="flex-1 rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:focus:ring-indigo-400 dark:placeholder-gray-400 text-sm sm:text-base"
             @keyup.enter="addEvent"
           />
           <button
             @click="addEvent"
             :disabled="loading || !newEvent.trim()"
-            class="rounded-md bg-indigo-600 dark:bg-indigo-500 px-4 py-2 text-white hover:bg-indigo-500 dark:hover:bg-indigo-400 disabled:opacity-50"
+            class="w-full sm:w-auto rounded-md bg-indigo-600 dark:bg-indigo-500 px-4 py-2 text-white hover:bg-indigo-500 dark:hover:bg-indigo-400 disabled:opacity-50 text-sm sm:text-base font-semibold"
           >
             {{ loading ? 'Guardando...' : 'Guardar' }}
           </button>
@@ -243,7 +243,7 @@ onMounted(() => {
           </button>
         </div>
 
-        <div v-if="showCustomDate" class="flex gap-4">
+        <div v-if="showCustomDate" class="flex flex-col sm:flex-row gap-4">
           <div class="flex-1">
             <label for="custom-date" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
               Fecha
@@ -252,7 +252,7 @@ onMounted(() => {
               id="custom-date"
               v-model="customDate"
               type="date"
-              class="block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:focus:ring-indigo-400"
+              class="block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:focus:ring-indigo-400 text-sm sm:text-base"
             />
           </div>
           <div class="flex-1">
@@ -263,7 +263,7 @@ onMounted(() => {
               id="custom-time"
               v-model="customTime"
               type="time"
-              class="block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:focus:ring-indigo-400"
+              class="block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:focus:ring-indigo-400 text-sm sm:text-base"
             />
           </div>
         </div>
@@ -271,9 +271,9 @@ onMounted(() => {
     </div>
 
     <div>
-      <div class="flex justify-between items-center mb-6">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-0 mb-6">
         <div class="flex items-center gap-4">
-          <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Eventos registrados</h2>
+          <h2 class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Eventos registrados</h2>
           <button
             v-if="filteredEvents.length > 0"
             @click="showReportModal = true"
@@ -286,11 +286,11 @@ onMounted(() => {
             Generar reporte
           </button>
         </div>
-        <div class="inline-flex rounded-lg shadow-sm">
+        <div class="w-full sm:w-auto inline-flex rounded-lg shadow-sm">
           <button
             @click="selectedFilter = 'today'"
             :class="[
-              'px-4 py-2 text-sm font-medium rounded-l-lg',
+              'flex-1 sm:flex-none px-4 py-2 text-sm font-medium rounded-l-lg',
               selectedFilter === 'today'
                 ? 'bg-indigo-600 dark:bg-indigo-500 text-white'
                 : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-600'
@@ -301,7 +301,7 @@ onMounted(() => {
           <button
             @click="selectedFilter = 'yesterday'"
             :class="[
-              'px-4 py-2 text-sm font-medium rounded-r-lg border-l border-gray-200 dark:border-gray-600',
+              'flex-1 sm:flex-none px-4 py-2 text-sm font-medium rounded-r-lg border-l border-gray-200 dark:border-gray-600',
               selectedFilter === 'yesterday'
                 ? 'bg-indigo-600 dark:bg-indigo-500 text-white'
                 : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-600'
@@ -320,17 +320,17 @@ onMounted(() => {
         No hay eventos registrados para {{ selectedFilter === 'today' ? 'hoy' : 'ayer' }}
       </div>
 
-      <div v-else class="space-y-4">
+      <div v-else class="space-y-3 sm:space-y-4">
         <div
           v-for="event in filteredEvents"
           :key="event.id"
-          class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow dark:shadow-gray-700/20"
+          class="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg shadow dark:shadow-gray-700/20"
         >
-          <div class="flex justify-between items-start">
-            <p class="text-gray-900 dark:text-white">{{ event.content }}</p>
+          <div class="flex justify-between items-start gap-4">
+            <p class="text-gray-900 dark:text-white text-sm sm:text-base">{{ event.content }}</p>
             <button
               @click="confirmDelete(event)"
-              class="ml-4 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400"
+              class="ml-4 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 flex-shrink-0"
               title="Eliminar evento"
             >
               <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

@@ -61,10 +61,10 @@ const handleGoogleAuth = async () => {
 </script>
 
 <template>
-  <div class="flex min-h-[80vh] items-center justify-center">
-    <div class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-8 shadow-xl transition-all">
+  <div class="flex min-h-[80vh] items-center justify-center px-4 sm:px-6 lg:px-8">
+    <div class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-6 sm:p-8 shadow-xl transition-all">
       <div class="text-center">
-        <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+        <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
           {{ isSignUp ? 'Crear nueva cuenta' : 'Bienvenido de nuevo' }}
         </h2>
         <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
@@ -72,13 +72,13 @@ const handleGoogleAuth = async () => {
         </p>
       </div>
 
-      <div class="mt-8">
+      <div class="mt-6 sm:mt-8">
         <div>
           <button
             type="button"
             @click="handleGoogleAuth"
             :disabled="loading"
-            class="flex w-full items-center justify-center gap-3 rounded-lg bg-white dark:bg-gray-700 px-4 py-2.5 text-sm font-semibold text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:focus-visible:outline-indigo-400 disabled:opacity-50"
+            class="flex w-full items-center justify-center gap-3 rounded-lg bg-white dark:bg-gray-700 px-3 sm:px-4 py-2 sm:py-2.5 text-sm font-semibold text-gray-900 dark:text-white shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:focus-visible:outline-indigo-400 disabled:opacity-50"
           >
             <svg class="h-5 w-5" viewBox="0 0 24 24">
               <path
@@ -99,7 +99,7 @@ const handleGoogleAuth = async () => {
           </div>
         </div>
 
-        <form class="mt-6 space-y-6" @submit.prevent="handleAuth">
+        <form class="mt-6 space-y-4 sm:space-y-6" @submit.prevent="handleAuth">
           <div class="space-y-4">
             <div>
               <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-200">
@@ -111,7 +111,7 @@ const handleGoogleAuth = async () => {
                   v-model="email"
                   type="email"
                   required
-                  class="block w-full appearance-none rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 shadow-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  class="block w-full appearance-none rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 shadow-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                   placeholder="tu@email.com"
                 />
               </div>
@@ -127,14 +127,14 @@ const handleGoogleAuth = async () => {
                   v-model="password"
                   type="password"
                   required
-                  class="block w-full appearance-none rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 shadow-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  class="block w-full appearance-none rounded-lg border border-gray-300 dark:border-gray-600 px-3 py-2 shadow-sm placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 dark:focus:ring-indigo-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm sm:text-base"
                   placeholder="••••••••"
                 />
               </div>
             </div>
           </div>
 
-          <div v-if="error" class="rounded-md bg-red-50 dark:bg-red-900/30 p-4">
+          <div v-if="error" class="rounded-md bg-red-50 dark:bg-red-900/30 p-3 sm:p-4">
             <div class="flex">
               <div class="flex-shrink-0">
                 <svg class="h-5 w-5 text-red-400 dark:text-red-500" viewBox="0 0 20 20" fill="currentColor">
@@ -151,7 +151,7 @@ const handleGoogleAuth = async () => {
             <button
               type="submit"
               :disabled="loading"
-              class="flex w-full justify-center rounded-lg bg-indigo-600 dark:bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 dark:hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:focus-visible:outline-indigo-400 disabled:opacity-50"
+              class="flex w-full justify-center rounded-lg bg-indigo-600 dark:bg-indigo-500 px-3 sm:px-4 py-2 sm:py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 dark:hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:focus-visible:outline-indigo-400 disabled:opacity-50"
             >
               <svg
                 v-if="loading"
