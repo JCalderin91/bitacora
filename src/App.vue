@@ -23,17 +23,11 @@ onMounted(() => {
 <template>
   <div class="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
     <header class="bg-white dark:bg-gray-800 shadow">
-      <div class="mx-auto max-w-7xl px-3 sm:px-6 lg:px-8 py-2 sm:py-3">
+      <div class="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
         <div class="flex justify-between items-center">
-          <div class="flex items-center gap-1.5 sm:gap-3">
-            <svg class="w-5 h-5 sm:w-8 sm:h-8 text-indigo-600 dark:text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="10" />
-              <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" />
-            </svg>
-            <h1 class="text-lg sm:text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-              Bitácora de Eventos
-            </h1>
-          </div>
+          <h1 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+            Bitácora de Eventos
+          </h1>
           <div class="flex items-center gap-4">
             <UserProfile v-if="session" />
             <ThemeToggle />

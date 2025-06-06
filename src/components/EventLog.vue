@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, nextTick } from 'vue'
 import { supabase } from '../supabase'
 import ConfirmModal from './ConfirmModal.vue'
 import ReportModal from './ReportModal.vue'
@@ -12,6 +12,8 @@ const selectedFilter = ref('today')
 const showCustomDate = ref(false)
 const customDate = ref('')
 const customTime = ref('')
+const editingEvent = ref(null)
+const editedContent = ref('')
 
 // Estado para el modal de confirmación
 const showDeleteModal = ref(false)
@@ -198,6 +200,54 @@ const generateReport = () => {
   return reportContent
 }
 
+const startEditing = async (event) => {
+  editingEvent.value = event
+  editedContent.value = event.content
+  // Esperar a que el DOM se actualice antes de enfocar
+  await nextTick()
+  const input = document.querySelector(`#edit-input-${event.id}`)
+  if (input) input.focus()
+}
+
+const cancelEditing = () => {
+  editingEvent.value = null
+  editedContent.value = ''
+}
+
+const saveEdit = async () => {
+  if (!editingEvent.value || !editedContent.value.trim()) return
+
+  try {
+    loading.value = true
+    const { data: { user } } = await supabase.auth.getUser()
+
+    const { error: updateError } = await supabase
+      .from('events')
+      .update({ content: editedContent.value.trim() })
+      .eq('id', editingEvent.value.id)
+      .eq('user_id', user.id)
+
+    if (updateError) throw updateError
+
+    // Actualizar el evento en la lista local
+    const index = events.value.findIndex(e => e.id === editingEvent.value.id)
+    if (index !== -1) {
+      events.value[index] = {
+        ...events.value[index],
+        content: editedContent.value.trim()
+      }
+    }
+
+    editingEvent.value = null
+    editedContent.value = ''
+  } catch (e) {
+    error.value = e.message
+    console.error('Error al actualizar:', e)
+  } finally {
+    loading.value = false
+  }
+}
+
 onMounted(() => {
   fetchEvents()
 })
@@ -324,23 +374,63 @@ onMounted(() => {
         <div
           v-for="event in filteredEvents"
           :key="event.id"
-          class="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg shadow dark:shadow-gray-700/20"
+          class="group bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg shadow dark:shadow-gray-700/20"
         >
-          <div class="flex justify-between items-start gap-4">
-            <p class="text-gray-900 dark:text-white text-sm sm:text-base">{{ event.content }}</p>
-            <button
-              @click="confirmDelete(event)"
-              class="ml-4 text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 flex-shrink-0"
-              title="Eliminar evento"
-            >
-              <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clip-rule="evenodd" />
-              </svg>
-            </button>
+          <div v-if="editingEvent?.id === event.id" class="flex flex-col gap-3">
+            <input
+              :id="`edit-input-${event.id}`"
+              v-model="editedContent"
+              type="text"
+              class="block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:focus:ring-indigo-400 text-sm"
+              placeholder="¿Qué sucedió?"
+              @keyup.enter="saveEdit"
+              @keyup.esc="cancelEditing"
+            />
+            <div class="flex justify-end gap-2">
+              <button
+                @click="cancelEditing"
+                class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white"
+              >
+                Cancelar
+              </button>
+              <button
+                @click="saveEdit"
+                :disabled="loading || !editedContent.trim()"
+                class="inline-flex items-center px-3 py-1.5 rounded-md bg-indigo-600 dark:bg-indigo-500 text-sm font-medium text-white hover:bg-indigo-500 dark:hover:bg-indigo-400 disabled:opacity-50"
+              >
+                {{ loading ? 'Guardando...' : 'Guardar' }}
+              </button>
+            </div>
           </div>
-          <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
-            {{ formatDate(event.created_at) }}
-          </p>
+          <div v-else>
+            <div class="flex justify-between items-start gap-4">
+              <p class="text-gray-900 dark:text-white text-sm sm:text-base">{{ event.content }}</p>
+              <div class="flex items-center gap-2">
+                <button
+                  @click="startEditing(event)"
+                  class="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-gray-400 hover:text-indigo-500 dark:text-gray-500 dark:hover:text-indigo-400"
+                  title="Editar evento"
+                >
+                  <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M5.433 13.917l1.262-3.155A4 4 0 017.58 9.42l6.92-6.918a2.121 2.121 0 013 3l-6.92 6.918c-.383.383-.84.685-1.343.886l-3.154 1.262a.5.5 0 01-.65-.65z" />
+                    <path d="M3.5 5.75c0-.69.56-1.25 1.25-1.25H10A.75.75 0 0010 3H4.75A2.75 2.75 0 002 5.75v9.5A2.75 2.75 0 004.75 18h9.5A2.75 2.75 0 0017 15.25V10a.75.75 0 00-1.5 0v5.25c0 .69-.56 1.25-1.25 1.25h-9.5c-.69 0-1.25-.56-1.25-1.25v-9.5z" />
+                  </svg>
+                </button>
+                <button
+                  @click="confirmDelete(event)"
+                  class="sm:opacity-0 sm:group-hover:opacity-100 transition-opacity text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400"
+                  title="Eliminar evento"
+                >
+                  <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clip-rule="evenodd" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+              {{ formatDate(event.created_at) }}
+            </p>
+          </div>
         </div>
       </div>
     </div>
