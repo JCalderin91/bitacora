@@ -115,7 +115,11 @@ const generateReport = () => {
   const { start } = getDateRange(selectedFilter.value)
   const reportDate = formatDateOnly(start)
 
-  const eventsText = filteredEvents.value
+  const sortedEvents = [...filteredEvents.value].sort((a, b) => {
+    return new Date(a.created_at) - new Date(b.created_at)
+  })
+
+  const eventsText = sortedEvents
     .map(event => `• ${event.content}\n  ${formatTimeOnly(event.created_at)}`)
     .join('\n\n')
 
