@@ -14,11 +14,28 @@ const handleAuth = async () => {
     error.value = ''
 
     if (isSignUp.value) {
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email: email.value,
         password: password.value,
+        options: {
+          data: {
+            name: email.value.split('@')[0]
+          }
+        }
       })
+
       if (signUpError) throw signUpError
+
+      if (data?.user) {
+        // Iniciar sesión automáticamente después del registro
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: email.value,
+          password: password.value,
+        })
+        if (signInError) throw signInError
+      } else {
+        error.value = 'Por favor, verifica tu correo electrónico para activar tu cuenta.'
+      }
     } else {
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: email.value,
