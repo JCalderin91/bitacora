@@ -1,10 +1,11 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { EventService } from '../services/eventService'
-import { formatDateOnly, formatTimeOnly, getDateRange } from '../utils/dateFormatters'
-import { EVENT_FILTERS, EVENT_ERRORS } from '../types/event'
+import { formatDateOnly, formatTimeOnly, startOfDay, endOfDay, getCurrentDate } from '../utils/dateFormatters'
+import { EVENT_ERRORS } from '../types/event'
 import EventForm from './molecules/EventForm.vue'
 import EventList from './organisms/EventList.vue'
+import DatePicker from './molecules/DatePicker.vue'
 import ConfirmModal from './ConfirmModal.vue'
 import ReportModal from './ReportModal.vue'
 
@@ -13,7 +14,7 @@ const eventService = new EventService()
 const events = ref([])
 const loading = ref(false)
 const error = ref(null)
-const selectedFilter = ref(EVENT_FILTERS.TODAY)
+const selectedDate = ref(getCurrentDate())
 
 // Estado para el modal de confirmación
 const showDeleteModal = ref(false)
@@ -23,10 +24,12 @@ const eventToDelete = ref(null)
 const showReportModal = ref(false)
 
 const filteredEvents = computed(() => {
-  const { start, end } = getDateRange(selectedFilter.value)
+  const start = startOfDay(selectedDate.value)
+  const end = endOfDay(selectedDate.value)
+
   return events.value.filter(event => {
-    const eventDate = new Date(event.created_at)
-    return eventDate >= new Date(start) && eventDate < new Date(end)
+    const eventDate = event.created_at
+    return eventDate >= start && eventDate <= end
   })
 })
 
@@ -112,8 +115,7 @@ const cancelDelete = () => {
 }
 
 const generateReport = () => {
-  const { start } = getDateRange(selectedFilter.value)
-  const reportDate = formatDateOnly(start)
+  const reportDate = formatDateOnly(selectedDate.value)
 
   const sortedEvents = [...filteredEvents.value].sort((a, b) => {
     return new Date(a.created_at) - new Date(b.created_at)
@@ -130,43 +132,57 @@ onMounted(fetchEvents)
 </script>
 
 <template>
-  <div class="max-w-4xl mx-auto p-4">
-    <div class="mb-6 sm:mb-8">
-      <h2 class="text-xl sm:text-2xl font-bold mb-4 text-gray-900 dark:text-white">
-        Añadir nuevo evento
-      </h2>
-      <EventForm
+  <div class="grid grid-cols-1 sm:grid-cols-[320px_1fr] gap-6 p-4">
+    <!-- Aside con calendario -->
+    <aside class="shrink-0">
+      <div class="sticky top-4">
+        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+          Calendario
+        </h2>
+        <DatePicker
+          v-model:selectedDate="selectedDate"
+        />
+      </div>
+    </aside>
+
+    <!-- Contenido principal -->
+    <main class="flex-1 min-w-0">
+      <div class="mb-6 sm:mb-8">
+        <h2 class="text-xl sm:text-2xl font-bold mb-4 text-gray-900 dark:text-white">
+          Añadir nuevo evento
+        </h2>
+        <EventForm
+          :loading="loading"
+          @submit="handleCreateEvent"
+        />
+      </div>
+
+      <div v-if="error" class="text-red-600 dark:text-red-400 mb-4">
+        {{ error }}
+      </div>
+
+      <EventList
+        :events="filteredEvents"
         :loading="loading"
-        @submit="handleCreateEvent"
+        :selected-date="selectedDate"
+        @edit="handleEditEvent"
+        @delete="confirmDelete"
+        @report="showReportModal = true"
       />
-    </div>
 
-    <div v-if="error" class="text-red-600 dark:text-red-400 mb-4">
-      {{ error }}
-    </div>
+      <ConfirmModal
+        :is-open="showDeleteModal"
+        title="Eliminar evento"
+        message="¿Estás seguro de que quieres eliminar este evento? Esta acción no se puede deshacer."
+        @confirm="handleDeleteEvent"
+        @cancel="cancelDelete"
+      />
 
-    <EventList
-      :events="filteredEvents"
-      :loading="loading"
-      :selected-filter="selectedFilter"
-      @filter="selectedFilter = $event"
-      @edit="handleEditEvent"
-      @delete="confirmDelete"
-      @report="showReportModal = true"
-    />
-
-    <ConfirmModal
-      :is-open="showDeleteModal"
-      title="Eliminar evento"
-      message="¿Estás seguro de que quieres eliminar este evento? Esta acción no se puede deshacer."
-      @confirm="handleDeleteEvent"
-      @cancel="cancelDelete"
-    />
-
-    <ReportModal
-      :is-open="showReportModal"
-      :content="generateReport()"
-      @close="showReportModal = false"
-    />
+      <ReportModal
+        :is-open="showReportModal"
+        :content="generateReport()"
+        @close="showReportModal = false"
+      />
+    </main>
   </div>
 </template>
