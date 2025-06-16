@@ -8,6 +8,7 @@ import EventList from './organisms/EventList.vue'
 import DatePicker from './molecules/DatePicker.vue'
 import ConfirmModal from './ConfirmModal.vue'
 import ReportModal from './ReportModal.vue'
+import dayjs from 'dayjs'
 
 const eventService = new EventService()
 
@@ -53,7 +54,7 @@ const handleCreateEvent = async (eventData) => {
     const user = await eventService.getCurrentUser()
     await eventService.createEvent({
       content: eventData.content,
-      created_at: eventData.date,
+      created_at: dayjs(eventData.date).add(4, 'hour').format('YYYY-MM-DDTHH:mm'),
       user_id: user.id
     })
     await fetchEvents()
